@@ -2,27 +2,29 @@
 #include <stdlib.h>
 
 typedef struct node {
-    int data;
+    int32_t data;
     struct node* next;
+    struct node* prev;
 } node;
  
 typedef void (*callback)(node* data);
 
-node* create(int data,node* next) {
+node* create(int32_t data) {
     node* new_node = (node*)malloc(sizeof(node));
     if(new_node == NULL) {
         printf("Error creating a new node.\n");
         exit(0);
     }
     new_node->data = data;
-    new_node->next = next;
+    new_node->next = NULL;
+    new_node->prev = NULL;
  
     return new_node;
 }
 
 typedef struct linkedList {
     struct node* head; 
-    int size;
+    int32_t size;
 } linkedList;
 
 linkedList* list_create() {
@@ -31,11 +33,11 @@ linkedList* list_create() {
     return new_list;
 }
 
-void insert(int data, linkedList* the_list) {
+void insert(int32_t data, linkedList* the_list) {
     struct node *prev, *curr, *a;
     curr = the_list->head;
     prev = NULL;
-    a = create(data, NULL);
+    a = create(data);
 
     if (curr == NULL) {
         the_list->head = a;
@@ -44,6 +46,7 @@ void insert(int data, linkedList* the_list) {
     }
     if (curr->data > a->data){
         a->next = the_list->head;
+        the_list->head->prev = a;
         the_list->head = a;
         the_list->size++;
         return;
@@ -56,14 +59,16 @@ void insert(int data, linkedList* the_list) {
 
     if (curr == NULL) {
         prev->next = a;
-        a->next = curr;
+        a->prev = prev;
         the_list->size++;
         return;
     }
 
     if (a->data != curr->data) {
         prev->next = a;
+        a->prev = prev;
         a->next = curr;
+        curr->prev = a;
         the_list->size++;
     } 
 }
