@@ -3,6 +3,7 @@
 
 typedef struct node {
     int32_t data;
+    int32_t repetitions;
     struct node* next;
     struct node* prev;
 } node;
@@ -16,6 +17,7 @@ node* create(int32_t data) {
         exit(0);
     }
     new_node->data = data;
+    new_node->repetitions = 1;
     new_node->next = NULL;
     new_node->prev = NULL;
  
@@ -70,7 +72,9 @@ void insert(int32_t data, linkedList* the_list) {
         a->next = curr;
         curr->prev = a;
         the_list->size++;
-    } 
+    } else {
+        curr->repetitions ++;
+    }
 }
 
 void printList(linkedList* the_list) {
