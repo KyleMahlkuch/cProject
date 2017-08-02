@@ -45,6 +45,8 @@ int32_t my_bin_search (int32_t value, int64_t* data, int type) {
     max = length;
     min = -1;
 
+    a = master_list->head;
+
     while (1) {
         if (search_val == max) {
             if (value == middle) {
@@ -65,11 +67,22 @@ int32_t my_bin_search (int32_t value, int64_t* data, int type) {
         //update middle
         if (type == 0) {
             //then list
-            a = master_list->head;
-            for (i=0; i<search_val; i++){
-                a = a->next;
+/*            while (a->data != search_val) {
+                if (a->data < search_val) {
+                    a = a->next;
+                } else {
+                    a = a->prev;
+                }
+
             }
-            middle = a->data;
+
+*/
+            a = master_list->head;
+             for (i=0; i<search_val; i++){
+                 a = a->next;
+             }
+             middle = a->data;
+ 
         }
         if (type == 1) {
             //then array
@@ -116,7 +129,7 @@ void main(int argc, char **argv) {
     printf("Number of NUMA nodes founds: %d\n",sched_getcpu());
 
     while (1) {
-        printf("Please enter an integer or hit return to end.\n");
+        printf("Please enter an integer or hit return to end.\n> ");
         fgets(buff,100,stdin);
         if (buff[0] != '\n') {
             i = strtol(buff, &err, 10);
@@ -127,6 +140,7 @@ void main(int argc, char **argv) {
     }
 
     printf("done inserting into list.\n");
+
     printf("the list:\n");
     printList(master_list);
 
@@ -141,16 +155,22 @@ void main(int argc, char **argv) {
         a = a->next;
     }   
 
-    printf("\nEntering search mode...\n");
+    printf("\nEntering search mode...");
 
     int32_t list_out;
     int32_t array_out;
 
 
     while (1) {
-        printf("Please enter an integer you want to search for or hit return to end.\n");
+        printf("\nPlease enter an integer you want to search for or hit return to end.\nType 'l' to view the list again.\n> ");
         fgets(buff,100,stdin);
-        if (buff[0] != '\n') {
+
+        if (buff[0] == 'l') {
+
+            printf("the list:\n");
+            printList(master_list);
+
+        } else if (buff[0] != '\n') {
             i = strtol(buff, &err, 10);
 
             printf("searching for: %d\n", i);
@@ -170,8 +190,8 @@ void main(int argc, char **argv) {
             printf("list usec: %.3f\narray usec: %.3f\n", secondsL/1000.0, secondsA/1000.0);
 
         } else {
-            printf("Size of Array: %.3fKB\n", sizeof(*list_array)/1000.0);
-            printf("Size of List: %.3fKB\n", sizeof(*master_list)/1000.0);
+            printf("Size of List: %.3fKB\n", master_list->size * sizeof(struct node)/1000.0);
+            printf("Size of Array: %.3fKB\n\n", list_length * sizeof(int64_t)/1000.0);
             break;
         }
     }
