@@ -117,90 +117,148 @@ void main(int argc, char **argv) {
     struct timespec start={0,0}, end={0,0};
     long secondsL, secondsA;
 
-    master_list = list_create();
 
-    sysinfo(&info);
-    uname(&sys_info);
+    //Check cmd line args
+    if (argc <= 1) {
+        printf("usage: must provide file to read from. ./io <FILE> [NUM]\n");
+    } else {
 
-    printf("Begin program... Welcome!\n");
-    printf("Your process ID is: %d\n", getpid());
-    printf("Your kernel version is: %s\n", sys_info.version); //issues here .version
-    printf("Total RAM of system: %ld\n", info.totalram);
-    printf("Number of NUMA nodes founds: %d\n",sched_getcpu());
-
-    while (1) {
-        printf("Please enter an integer or hit return to end.\n> ");
-        fgets(buff,100,stdin);
-        if (buff[0] != '\n') {
-            i = strtol(buff, &err, 10);
-            insert(i, master_list);
-        } else {
-            break;
+        //check for ':' in file name
+        for (i = 0; i < sizeof(argv[1]); i++){
+            if(argv[1][i] == ':') {
+                printf("Invalid file name. Name cannot have char ':'.\n");
+                return;
+            }
         }
-    }
-
-    printf("done inserting into list.\n");
-
-    printf("the list:\n");
-    printList(master_list);
-
-    list_array = (int64_t*)malloc(sizeof(int64_t)*master_list->size);
-    list_length = 0;
-
-    a = master_list->head;
-    for ( i = 0; i < master_list->size; i++ ) {        
-        dummy = SHIFT_LEFT(a->repetitions) | a->data;
-        list_array[i] = dummy;
-        list_length++;
-        a = a->next;
-    }   
-
-    printf("\nEntering search mode...");
-
-    int32_t list_out;
-    int32_t array_out;
 
 
-    while (1) {
-        printf("\nPlease enter an integer you want to search for or hit return to end.\nType 'l' to view the list again.\n> ");
-        fgets(buff,100,stdin);
+        master_list = list_create();
 
-        if (buff[0] == 'l') {
+        sysinfo(&info);
+        uname(&sys_info);
 
-            printf("the list:\n");
-            printList(master_list);
+        printf("Begin program... Welcome!\n");
+        printf("Your process ID is: %d\n", getpid());
+        printf("Your kernel version is: %s\n", sys_info.version); //issues here .version
+        printf("Total RAM of system: %ld\n", info.totalram);
+        printf("Number of NUMA nodes founds: %d\n",sched_getcpu());
 
-        } else if (buff[0] != '\n') {
-            i = strtol(buff, &err, 10);
+        printf("\nReading your input file...\nValues: ");
 
-            printf("searching for: %d\n", i);
 
-            clock_gettime(CLOCK_MONOTONIC, &start);
-            list_out = my_bin_search (i, list_array, 0);
-            clock_gettime(CLOCK_MONOTONIC, &end);
-            secondsL = ((double)end.tv_nsec - start.tv_nsec);
+        //read file
+        char c;
+        FILE *file;
+        
+        int count = 0;
 
-            clock_gettime(CLOCK_MONOTONIC, &start);
-            array_out = my_bin_search (i, list_array, 1);
-            clock_gettime(CLOCK_MONOTONIC, &end);
-            printf("%d\n", end.tv_nsec);
-            secondsA = ((double)end.tv_nsec - start.tv_nsec);
-            
-            printf("list pos: %d\narray pos: %d\n", list_out, array_out);
-            printf("list usec: %.3f\narray usec: %.3f\n", secondsL/1000.0, secondsA/1000.0);
+        file = fopen(argv[1], "r");
+        if (file) {
+            c = getc(file);
+            while (c != '.') {
+                char theInt[10];
+                while (c != ',' & c != '.') {
+                    theInt[count] = c;
+                    c = getc(file);
+                    count++;
+                }
+                
+                if (theInt[0] != '\0') {
+                    i = atoi (theInt);
+                    printf("%d ", i);
+                    insert(i, master_list);
 
-        } else {
-            printf("Size of List: %.3fKB\n", master_list->size * sizeof(struct node)/1000.0);
-            printf("Size of Array: %.3fKB\n\n", list_length * sizeof(int64_t)/1000.0);
-            break;
+                    int c;
+                    for (c=0; c<count; c++) theInt[c] = '\0';
+                    count = 0;
+                }
+                if (c == '.') break;
+                c = getc(file);
+            }
+            printf("\n");
+            fclose(file);
         }
-    }
 
+
+        printf("done inserting into list.\n");
+
+        printf("the list:\n");
+        printList(master_list);
+
+        list_array = (int64_t*)malloc(sizeof(int64_t)*master_list->size);
+        list_length = 0;
+
+        a = master_list->head;
+        for ( i = 0; i < master_list->size; i++ ) {        
+            dummy = SHIFT_LEFT(a->repetitions) | a->data;
+            list_array[i] = dummy;
+            list_length++;
+            a = a->next;
+        }   
+
+        printf("\nEntering search mode...");
+
+        int32_t list_out;
+        int32_t array_out;
+
+
+        while (1) {
+            printf("\nPlease enter an integer you want to search for or hit return to end.\nType 'l' to view the list again.\n> ");
+            fgets(buff,100,stdin);
+
+            if (buff[0] == 'l') {
+
+                printf("the list:\n");
+                printList(master_list);
+
+            } else if (buff[0] != '\n') {
+                i = strtol(buff, &err, 10);
+
+                printf("searching for: %d\n", i);
+
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                list_out = my_bin_search (i, list_array, 0);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                secondsL = ((double)end.tv_nsec - start.tv_nsec);
+
+                clock_gettime(CLOCK_MONOTONIC, &start);
+                array_out = my_bin_search (i, list_array, 1);
+                clock_gettime(CLOCK_MONOTONIC, &end);
+                secondsA = ((double)end.tv_nsec - start.tv_nsec);
+                
+                printf("list pos: %d\narray pos: %d\n", list_out, array_out);
+                printf("list usec: %.3f\narray usec: %.3f\n", secondsL/1000.0, secondsA/1000.0);
+
+            } else {
+                printf("Size of List: %.3fKB\n", master_list->size * sizeof(struct node)/1000.0);
+                printf("Size of Array: %.3fKB\n\n", list_length * sizeof(int64_t)/1000.0);
+                break;
+            }
+        }
+
+
+        if (argv[2])
+        if (atoi(argv[2])) {//then overwrite
+            printf("Writing to file...\n");
+
+            file = fopen(argv[1], "w");
+
+            if (file) {
+                a = master_list->head;
+                int s, r;
+                for ( s = 0; s < master_list->size; s++ ) { 
+                    for ( r=0; r < a->repetitions; r++) {
+                        fprintf(file, "%d,", a->data);
+                    }
+                    a = a->next;
+               }
+               fprintf(file, ".\n");
+            }
+            fclose(file);
+        }
+
+    }
 }
-
-
-
-
 
 
 
