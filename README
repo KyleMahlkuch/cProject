@@ -1,0 +1,115 @@
+C Exercise
+============================================================================
+
+Exercise is split in parts, from 0 to 3.
+
+
+0) I would like to be able to look the exercise when you're done using Git.
+So, if you can work in github or even create a local git repo and
+then pass to me over email, I'd appreciate. For next parts, I'd
+like to see commits, and branches for each part.
+What it means: you can have multiple commits on branch Part1,
+then when done, you duplicate this branch to Part2 to start the 2nd
+part and so on...tags would work too, you can avoid using branches
+by tagging each part when done.
+
+
+1) The 1st part is simple: a small program the reads inputs from user
+(stdin) and store these inputs in ordered form. It should read 32-bit
+integers, positive and negative. When user press 2 ENTERS, program
+should exit, but before it must show all inputs read *in order* on stdout.
+
+Data structure to be used: you should use a global double-linked list,
+insertions should be in order. Duplicate elements shouldn't be taken
+into account, i.e., if user provides as input the values 10, 13 and 10,
+your list will have only 2 elements.
+
+Also, as soon program starts, before reading user values, it should
+show: PID of its process, kernel version running, total RAM memory of
+the system and the number of NUMA nodes of the machine.
+Oh, it should be 'compilable' and executable in both x86 and powerpc
+machines.
+
+
+2) The second part is an extension of the first:
+  - now you should take into account number of element repetitions.
+  So, if user enters 10, 13 and 19, your list will still have 2 elements,
+  but you need to "flag" the element 10 to indicate it was added twice.
+  You can use another field in the element structure by accomplish this.
+  Maximum number of element repetition is 32-bit, i.e., a number might be
+  repeated up to 2^32 -1 times.
+ 
+  - as soon user stops providing inputs and press 2 ENTERs, you need now
+  to copy the list contents to a dynamically allocated array in this
+  moment. You must also preserve the repetition information of the elements
+  in this array: each array element should be a 64-bit integer, being
+  half of it the value and half the number of times it was entered.
+  So, each array element is a single 64-bit integer storing two 32-bit
+  integers on it! You should use bit-shiftting to deal with this situation
+  of having 64-bit integers storing 2 small integers heheh
+  Do small macros to simplify the bit-shiffting along the code, use
+  #define to create those macros.
+
+  - your program now will allow searches. Right after the user stops
+  the input sequence (by pressing 2 ENTERs), your program will enter in
+  another "mode", in which it'll take inputs again, but this time you
+  should search each input in both the list *and* the array! You need
+  to return the position of this element in the list and in the array,
+  in case it is found. Also, you should measure the time each search
+  (on list and on array) took, showing both results in miliseconds.
+  You must use binary search to accomplish this, since inputs are already
+  ordered. The prototype of the bin search function should be like this:
+ 
+  int32_t my_bin_search (int32_t value, void *data, int type);
+    >> value is the value to be searched;
+    >> data is a pointer to either the list or the array;
+    >> type is 0 for list and 1 for array, i.e., the same bin search
+    function is used to look both the list or the array.
+
+  The return for this function should be the position on list/array in
+  case element is found, or -1 if the element is not found.
+ 
+  Suggestion: keep a global pointer to the middle of the list, to be
+  updated on each insertion. This will be the starting point of the
+  bin search in the list...
+
+ -Finally, after user searches some values, after pressing ENTER twice
+ again, your program should terminate. But this time it shouldn't show
+ all inserted values again; instead, show the size of each structure
+ (list and array) in kilobytes.
+ 
+3) Following now, you'll modify your part 2. Your program will now accept
+2 arguments from command-line, a string (char*) and an integer.
+
+So, suppose your executable is called X, it could be invoked like this:
+
+./X /root/input2.txt 1
+
+First argument is a path to a text file (and you must assure this path
+does not have the char ':'). Second argument is an integer (optional).
+
+Now, IF the first argument is passed, then the input reading will happen
+from the file pointed in 1st argument's path instead from stdin as before.
+Format for this input file should be:
+
+"13,10,10,50,,1,-95,0."
+
+Meaning: integers separated by ',', and character '.' implies the
+end of file. You can have arbitrary repeated commas without values
+in-between - in this case no value should be added, but you need
+to continue parsing.
+
+Second argument (which defaults to 0 and is optional) tells you if,
+at the end of the execution, the file pointed on first argument should be
+overwritten with the ordered inputs. If 0, not. If 1, you need to overwrite
+the file. In this case, you can use either the array or list (your choice)
+to get the ordered numbers and dump them to the file.
+
+NOTE: If you have repeated numbers, they aren't duplicated on list/array,
+but you should duplicate them on the file write!
+
+***********************************************************************
+
+BONUS: Implement also a small bash script that generates random input
+files, taking the number of input as argument, up to the limit of
+2^32-1 inputs. Use a good Linux pseudo-random number generator.

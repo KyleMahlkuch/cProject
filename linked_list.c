@@ -8,8 +8,6 @@ typedef struct node {
     struct node* prev;
 } node;
  
-typedef void (*callback)(node* data);
-
 node* create(int32_t data) {
     node* new_node = (node*)malloc(sizeof(node));
     if(new_node == NULL) {
